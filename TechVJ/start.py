@@ -99,9 +99,9 @@ async def save(client: Client, message: Message):
     # joining chats
 	if ("https://t.me/+" in message.text or "https://t.me/joinchat/" in message.text) and LOGIN_SYSTEM == False:
 
-		if TechVJUser is None:
-			await client.send_message(message.chat.id,f"**String Session is not Set**", reply_to_message_id=message.id)
-			return
+        if TechVJUser is None:
+            await client.send_message(message.chat.id, f"**String Session is not Set**", reply_to_message_id=message.id)
+            return
         try:
             try:
                 await TechVJUser.join_chat(message.text)
@@ -131,8 +131,7 @@ async def save(client: Client, message: Message):
             if LOGIN_SYSTEM == True:
                 user_data = await db.get_session(message.from_user.id)
                 if user_data is None:
-                    await message.reply("**For Downloading Restricted Content You Have To /login First.**")
-                    batch_temp.IS_BATCH[message.from_user.id] = True
+                    await client.send_message(message.chat.id, f"**String Session is not Set**", reply_to_message_id=message.id)
                     return
                 try:
                     acc = Client("saverestricted", session_string=user_data, api_hash=API_HASH, api_id=API_ID)
