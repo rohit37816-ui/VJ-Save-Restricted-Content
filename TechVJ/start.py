@@ -71,7 +71,25 @@ async def send_start(client: Client, message: Message):
     await client.send_message(
         chat_id=message.chat.id, 
         text=f"<b>👋 Hi {message.from_user.mention}, I am Save Restricted Content Bot, I can send you restricted content by its post link.\n\nFor downloading restricted content /login first.\n\nKnow how to use bot by - /help</b>", 
-        reply_markup=reply_markup, 
+# joining chats
+if ("https://t.me/+" in message.text or "https://t.me/joinchat/" in message.text) and LOGIN_SYSTEM == False:
+
+    if TechVJUser is None:
+        await client.send_message(message.chat.id, f"**String Session is not Set**", reply_to_message_id=message.id)
+        return
+
+    try:
+        try:
+            await TechVJUser.join_chat(message.text)
+        except Exception as e: 
+            await client.send_message(message.chat.id, f"**Error** : __{e}__", reply_to_message_id=message.id)
+            return
+        await client.send_message(message.chat.id, "**Chat Joined**", reply_to_message_id=message.id)
+    except UserAlreadyParticipant:
+        await client.send_message(message.chat.id, "**Chat already Joined**", reply_to_message_id=message.id)
+    except InviteHashExpired:
+        await client.send_message(message.chat.id, "**Invalid Link**", reply_to_message_id=message.id)
+    return        reply_markup=reply_markup, 
         reply_to_message_id=message.id
     )
     return
@@ -96,43 +114,7 @@ async def send_cancel(client: Client, message: Message):
 
 @Client.on_message(filters.text & filters.private)
 async def save(client: Client, message: Message):
-    # joining chats
-	if ("https://t.me/+" in message.text or "https://t.me/joinchat/" in message.text) and LOGIN_SYSTEM == False:
 
-        if TechVJUser is None:
-            await client.send_message(message.chat.id, f"**String Session is not Set**", reply_to_message_id=message.id)
-            return
-        try:
-            try:
-                await TechVJUser.join_chat(message.text)
-            except Exception as e: 
-                await client.send_message(message.chat.id,f"**Error** : __{e}__", reply_to_message_id=message.id)
-                return
-            await client.send_message(message.chat.id,"**Chat Joined**", reply_to_message_id=message.id)
-        except UserAlreadyParticipant:
-            await client.send_message(message.chat.id,"**Chat alredy Joined**", reply_to_message_id=message.id)
-        except InviteHashExpired:
-            await client.send_message(message.chat.id,"**Invalid Link**", reply_to_message_id=message.id)
-        return
-    
-    if "https://t.me/" in message.text:
-        if batch_temp.IS_BATCH.get(message.from_user.id) == False:
-            return await message.reply_text("**One Task Is Already Processing. Wait For Complete It. If You Want To Cancel This Task Then Use - /cancel**")
-        datas = message.text.split("/")
-        temp = datas[-1].replace("?single","").split("-")
-        fromID = int(temp[0].strip())
-        try:
-            toID = int(temp[1].strip())
-        except:
-            toID = fromID
-        batch_temp.IS_BATCH[message.from_user.id] = False
-        for msgid in range(fromID, toID+1):
-            if batch_temp.IS_BATCH.get(message.from_user.id): break
-            if LOGIN_SYSTEM == True:
-                user_data = await db.get_session(message.from_user.id)
-                if user_data is None:
-                    await client.send_message(message.chat.id, f"**String Session is not Set**", reply_to_message_id=message.id)
-                    return
                 try:
                     acc = Client("saverestricted", session_string=user_data, api_hash=API_HASH, api_id=API_ID)
                     await acc.start()
